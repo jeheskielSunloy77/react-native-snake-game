@@ -1,51 +1,50 @@
-import { TouchableOpacity, StyleSheet, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { Colors } from "../styles/colors";
-import { FontAwesome } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from '@expo/vector-icons'
+import React from 'react'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Colors } from '../styles/colors'
 
 interface HeaderProps {
-  reloadGame: () => void;
-  pauseGame: () => void;
-  children: JSX.Element;
-  isPaused: boolean;
+	reloadGame: () => void
+	pauseGame: () => void
+	isPaused: boolean
+	score: number
 }
 
 export default function Header({
-  children,
-  reloadGame,
-  pauseGame,
-  isPaused,
-}: HeaderProps): JSX.Element {
-  return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={reloadGame}>
-        <Ionicons name="reload-circle" size={35} color={Colors.primary} />
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={pauseGame}>
-        <FontAwesome
-          name={isPaused ? "play-circle" : "pause-circle"}
-          size={35}
-          color={Colors.primary}
-        />
-      </TouchableOpacity>
-      {children}
-    </View>
-  );
+	reloadGame,
+	pauseGame,
+	score,
+	isPaused,
+}: HeaderProps) {
+	return (
+		<View style={styles.container}>
+			<Text style={styles.text}>
+				{score}
+				<MaterialCommunityIcons name='food-apple' size={20} />
+			</Text>
+			<TouchableOpacity onPress={reloadGame}>
+				<MaterialCommunityIcons name='restart' size={35} color={Colors.primary} />
+			</TouchableOpacity>
+			<TouchableOpacity onPress={pauseGame}>
+				<MaterialCommunityIcons name='cog' size={35} color={Colors.primary} />
+			</TouchableOpacity>
+		</View>
+	)
 }
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 0.05,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderColor: Colors.primary,
-    borderWidth: 12,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    borderBottomWidth: 0,
-    padding: 15,
-    backgroundColor: Colors.background,
-  },
-});
+	text: {
+		fontSize: 35,
+		fontWeight: 'bold',
+		color: Colors.primary,
+	},
+	container: {
+		flex: 0.05,
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between',
+		padding: 15,
+		minHeight: 50,
+		borderBottomColor: '#d1d5db',
+		borderBottomWidth: 1,
+	},
+})
