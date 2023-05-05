@@ -1,5 +1,6 @@
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
+import { useThemeContext } from '../contexts/theme'
 import { Colors } from '../styles/colors'
 import { Coordinate } from '../types/types'
 
@@ -8,6 +9,8 @@ interface SnakeProps {
 }
 
 export default function Snake({ snake }: SnakeProps) {
+	const { theme } = useThemeContext()
+	const themedColors = Colors[theme]
 	return (
 		<>
 			{snake.map((segment, index) => {
@@ -20,7 +23,7 @@ export default function Snake({ snake }: SnakeProps) {
 							{
 								left: segment.x * 10,
 								top: segment.y * 10,
-								backgroundColor: isHead ? Colors.secondary : Colors.primary,
+								backgroundColor: isHead ? themedColors.secondary : themedColors.primary,
 								borderRadius: isHead ? 5 : 2,
 							},
 						]}
@@ -36,7 +39,6 @@ const styles = StyleSheet.create({
 		width: 15,
 		height: 15,
 		borderRadius: 2,
-		backgroundColor: Colors.primary,
 		position: 'absolute',
 	},
 })
