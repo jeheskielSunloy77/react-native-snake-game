@@ -5,12 +5,13 @@ import {
 	NavigationContainer,
 } from '@react-navigation/native'
 import React from 'react'
-import { Text, View } from 'react-native'
+import { StatusBar, View } from 'react-native'
 import 'react-native-gesture-handler'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import {
 	Button,
 	MaterialCommunityIcons,
+	Text,
 } from './src/components/themedComponents'
 import { GameProvider, useGameContext } from './src/contexts/game'
 import { ThemeProvider, useThemeContext } from './src/contexts/theme'
@@ -20,11 +21,11 @@ export const Drawer = createDrawerNavigator()
 const App = (): JSX.Element => {
 	return (
 		<GestureHandlerRootView style={{ flex: 1 }}>
-			<GameProvider>
-				<ThemeProvider>
+			<ThemeProvider>
+				<GameProvider>
 					<AppDrawer />
-				</ThemeProvider>
-			</GameProvider>
+				</GameProvider>
+			</ThemeProvider>
 		</GestureHandlerRootView>
 	)
 }
@@ -33,50 +34,62 @@ export default App
 const AppDrawer = () => {
 	const { score, reloadGame } = useGameContext()
 	const { toggleTheme, theme } = useThemeContext()
+	const isDark = theme === 'dark'
 	return (
-		<NavigationContainer theme={theme === 'dark' ? DarkTheme : DefaultTheme}>
-			<Drawer.Navigator
-				initialRouteName='Game'
-				drawerContent={({ navigation }) => (
-					<View
-						style={{ paddingVertical: 38, paddingHorizontal: 10, flex: 1, gap: 10 }}
-					>
-						<Button
-							title='New Game'
-							onPress={() => {
-								reloadGame()
-								navigation.closeDrawer()
-							}}
-						/>
-						<Button
-							title='Toggle Theme'
-							onPress={() => {
-								toggleTheme()
-							}}
-						/>
-					</View>
-				)}
-			>
-				<Drawer.Screen
-					name='Game'
-					component={Game}
-					options={{
-						headerTitle: '',
-						headerRight: () => (
-							<Text
-								style={{
-									fontSize: 35,
-									fontWeight: 'bold',
-									marginRight: 10,
+		<>
+			<NavigationContainer theme={theme === 'dark' ? DarkTheme : DefaultTheme}>
+				<Drawer.Navigator
+					initialRouteName='Game'
+					drawerContent={({ navigation }) => (
+						<View
+							style={{ paddingVertical: 38, paddingHorizontal: 10, flex: 1, gap: 10 }}
+						>
+							<Button
+								title='New Game'
+								onPress={() => {
+									reloadGame()
+									navigation.closeDrawer()
 								}}
-							>
-								{score}
-								<MaterialCommunityIcons name='food-apple' size={16} />
-							</Text>
-						),
-					}}
-				/>
-			</Drawer.Navigator>
-		</NavigationContainer>
+							/>
+							<Button
+								title='Toggle Theme'
+								onPress={() => {
+									toggleTheme()
+								}}
+							/>
+						</View>
+					)}
+				>
+					<Drawer.Screen
+						name='Game'
+						component={Game}
+						options={{
+							headerTitle: '',
+							header:()=>(
+								<View>
+									
+								</View>
+							),
+							headerRight: () => (
+								<Text
+									style={{
+										fontSize: 35,
+										fontWeight: 'bold',
+										marginRight: 10,
+									}}
+								>
+									{score}
+									<MaterialCommunityIcons name='food-apple' size={16} />
+								</Text>
+							),
+						}}
+					/>
+				</Drawer.Navigator>
+			</NavigationContainer>
+			<StatusBar
+				barStyle={isDark ? 'light-content' : 'dark-content'}
+				backgroundColor={isDark ? 'black' : 'white'}
+			/>
+		</>
 	)
 }
