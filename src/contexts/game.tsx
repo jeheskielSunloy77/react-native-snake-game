@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
+import { Dimensions } from 'react-native'
 import { Coordinate, Direction, GestureEventType } from '../types/types'
 import { checkEatsFood } from '../utils/checkEatsFood'
 import { checkGameOver } from '../utils/checkGameOver'
-import { randomFoodPosition } from '../utils/randomFoodPosition'
+import randomCoordinate from '../utils/randomCoordinate'
 
 interface GameContextProps {
 	direction: Direction
@@ -17,13 +18,23 @@ interface GameContextProps {
 }
 const GameContext = createContext({} as GameContextProps)
 
-const SNAKE_INITIAL_POSITION = [{ x: 5, y: 5 }]
-const FOOD_INITIAL_POSITION = { x: 5, y: 20 }
-const GAME_BOUNDS = { xMin: 0, xMax: 38, yMin: 0, yMax: 63 }
+const { width, height } = Dimensions.get('window')
+const GAME_BOUNDS = {
+	xMin: 0,
+	xMax: Math.floor(width / 10),
+	yMin: 1,
+	yMax: Math.floor(height / 11.6),
+}
+
 const MOVE_INTERVAL = 50
 const SCORE_INCREMENT = 1
 
+const generateCoordinates = () =>
+	randomCoordinate(GAME_BOUNDS.xMax - 5, GAME_BOUNDS.yMax - 5)
+
 export function GameProvider({ children }: { children: React.ReactNode }) {
+	const FOOD_INITIAL_POSITION = generateCoordinates()
+	const SNAKE_INITIAL_POSITION = [generateCoordinates()]
 	const [direction, setDirection] = useState<Direction>(Direction.Right)
 	const [snake, setSnake] = useState<Coordinate[]>(SNAKE_INITIAL_POSITION)
 	const [food, setFood] = useState<Coordinate>(FOOD_INITIAL_POSITION)
@@ -67,7 +78,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 		}
 
 		if (checkEatsFood(newHead, food, 2)) {
-			setFood(randomFoodPosition(GAME_BOUNDS.xMax, GAME_BOUNDS.yMax))
+			setFood(generateCoordinates())
 			setSnake([newHead, ...snake])
 			setScore((prev) => prev + SCORE_INCREMENT)
 		} else {
@@ -78,15 +89,15 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 	const handleGesture = (event: GestureEventType) => {
 		const { translationX, translationY } = event.nativeEvent
 		if (Math.abs(translationX) > Math.abs(translationY)) {
-			if (translationX > 0) {
+			if (translationX > 0 && direction !== Direction.Left) {
 				setDirection(Direction.Right)
-			} else {
+			} else if (translationX < 0 && direction !== Direction.Right) {
 				setDirection(Direction.Left)
 			}
 		} else {
-			if (translationY > 0) {
+			if (translationY > 0 && direction !== Direction.Up) {
 				setDirection(Direction.Down)
-			} else {
+			} else if (translationY < 0 && direction !== Direction.Down) {
 				setDirection(Direction.Up)
 			}
 		}

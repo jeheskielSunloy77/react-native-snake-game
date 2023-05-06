@@ -17,16 +17,21 @@ export const Button = (props: ButtonProps) => {
 	return <BaseButton {...props} color={Colors[theme].primary} />
 }
 
-export const Text = ({ style, ...props }: TextProps) => {
+export const Text = ({
+	style,
+	reverseColor,
+	...props
+}: TextProps & { reverseColor?: boolean }) => {
 	const { theme } = useThemeContext()
-	console.log(theme)
+	const color = reverseColor
+		? theme === 'dark'
+			? 'black'
+			: 'white'
+		: theme === 'dark'
+		? 'white'
+		: 'black'
 
-	return (
-		<BaseText
-			{...props}
-			style={[{ color: theme === 'dark' ? 'white' : 'black' }, style]}
-		/>
-	)
+	return <BaseText {...props} style={[{ color }, style]} />
 }
 
 export const View = ({ style, ...props }: ViewProps) => {
