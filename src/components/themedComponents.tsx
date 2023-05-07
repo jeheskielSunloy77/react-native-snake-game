@@ -45,11 +45,17 @@ export const View = ({ style, ...props }: ViewProps) => {
 	)
 }
 
+interface MaterialCommunityIconsProps
+	extends Omit<ComponentProps<typeof BaseMaterialCommunityIcons>, 'color'> {
+	color?: 'base' | 'primary'
+}
+
 export const MaterialCommunityIcons = ({
 	style,
+	color = 'base',
 	...props
-}: ComponentProps<typeof BaseMaterialCommunityIcons>) => {
+}: MaterialCommunityIconsProps) => {
 	const { theme } = useThemeContext()
 
-	return <BaseMaterialCommunityIcons {...props} color={Colors[theme].primary} />
+	return <BaseMaterialCommunityIcons {...props} color={Colors[theme][color]} />
 }

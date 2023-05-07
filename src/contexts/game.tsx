@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { Dimensions } from 'react-native'
 import { Coordinate, Direction, GestureEventType } from '../types/types'
 import { checkEatsFood } from '../utils/checkEatsFood'
-import { checkGameOver } from '../utils/checkGameOver'
+import checkGameOver from '../utils/checkGameOver'
 import randomCoordinate from '../utils/randomCoordinate'
 
 interface GameContextProps {
@@ -55,7 +55,13 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 		const snakeHead = snake[0]
 		const newHead = { ...snakeHead }
 
-		if (checkGameOver(snakeHead, GAME_BOUNDS)) {
+		if (
+			checkGameOver({
+				snakeHead: newHead,
+				snakeBody: snake.slice(1),
+				boundaries: GAME_BOUNDS,
+			})
+		) {
 			setIsGameOver((prev) => !prev)
 			return
 		}
