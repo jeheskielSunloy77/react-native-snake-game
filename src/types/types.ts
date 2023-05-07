@@ -15,3 +15,10 @@ export enum Direction {
 	Left,
 	Down,
 }
+
+export interface GameBoundries {
+	xMin: number
+	xMax: number
+	yMin: number
+	yMax: number
+}
