@@ -8,10 +8,10 @@ import React, {
 	useState,
 } from 'react'
 import { Dimensions } from 'react-native'
+import { checkEatsFood } from '../helpers/checkEatsFood'
+import checkGameOver from '../helpers/checkGameOver'
+import randomCoordinate from '../helpers/randomCoordinate'
 import { Coordinate, Direction, GestureEventType } from '../types/types'
-import { checkEatsFood } from '../utils/checkEatsFood'
-import checkGameOver from '../utils/checkGameOver'
-import randomCoordinate from '../utils/randomCoordinate'
 
 interface GameContextProps {
 	direction: Direction
