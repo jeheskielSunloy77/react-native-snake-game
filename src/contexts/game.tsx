@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, {
+	Dispatch,
+	SetStateAction,
+	createContext,
+	useContext,
+	useEffect,
+	useState,
+} from 'react'
 import { Dimensions } from 'react-native'
 import { Coordinate, Direction, GestureEventType } from '../types/types'
 import { checkEatsFood } from '../utils/checkEatsFood'
@@ -12,6 +19,9 @@ interface GameContextProps {
 	score: number
 	isGameOver: boolean
 	isPaused: boolean
+	moveInterval: number
+	bigFood: Coordinate | null
+	setMoveInterval: Dispatch<SetStateAction<number>>
 	handleGesture: (event: GestureEventType) => void
 	reloadGame: () => void
 	pauseGame: () => void
@@ -26,7 +36,6 @@ const GAME_BOUNDS = {
 	yMax: Math.floor(height / 11.6),
 }
 
-const MOVE_INTERVAL = 50
 const SCORE_INCREMENT = 1
 
 const generateCoordinates = () =>
@@ -36,8 +45,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 	const FOOD_INITIAL_POSITION = generateCoordinates()
 	const SNAKE_INITIAL_POSITION = [generateCoordinates()]
 	const [direction, setDirection] = useState<Direction>(Direction.Right)
+	const [moveInterval, setMoveInterval] = useState(50)
 	const [snake, setSnake] = useState<Coordinate[]>(SNAKE_INITIAL_POSITION)
 	const [food, setFood] = useState<Coordinate>(FOOD_INITIAL_POSITION)
+	const [bigFood, setBigFood] = useState<Coordinate | null>(null)
 	const [score, setScore] = useState(0)
 	const [isGameOver, setIsGameOver] = useState(false)
 	const [isPaused, setIsPaused] = useState(false)
@@ -46,7 +57,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 		if (!isGameOver) {
 			const intervalId = setInterval(() => {
 				!isPaused && moveSnake()
-			}, MOVE_INTERVAL)
+			}, moveInterval)
 			return () => clearInterval(intervalId)
 		}
 	}, [snake, isGameOver, isPaused])
@@ -54,18 +65,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 	const moveSnake = () => {
 		const snakeHead = snake[0]
 		const newHead = { ...snakeHead }
-
-		if (
-			checkGameOver({
-				snakeHead: newHead,
-				snakeBody: snake.slice(1),
-				boundaries: GAME_BOUNDS,
-			})
-		) {
-			setIsGameOver((prev) => !prev)
-			return
-		}
-
 		switch (direction) {
 			case Direction.Up:
 				newHead.y -= 1
@@ -86,9 +85,25 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 		if (checkEatsFood(newHead, food, 2)) {
 			setFood(generateCoordinates())
 			setSnake([newHead, ...snake])
+			setBigFood(generateCoordinates())
 			setScore((prev) => prev + SCORE_INCREMENT)
+		} else if (bigFood && checkEatsFood(newHead, bigFood, 5)) {
+			setBigFood(null)
+			setSnake([...Array(5).fill(newHead), ...snake])
+			setScore((prev) => prev + SCORE_INCREMENT * 5)
 		} else {
 			setSnake([newHead, ...snake.slice(0, -1)])
+		}
+
+		if (
+			checkGameOver({
+				snakeHead: newHead,
+				snakeBody: snake.slice(1),
+				boundaries: GAME_BOUNDS,
+			})
+		) {
+			setIsGameOver((prev) => !prev)
+			return
 		}
 	}
 
@@ -112,6 +127,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 	const reloadGame = () => {
 		setSnake(SNAKE_INITIAL_POSITION)
 		setFood(FOOD_INITIAL_POSITION)
+		setBigFood(null)
 		setIsGameOver(false)
 		setScore(0)
 		setDirection(Direction.Right)
@@ -123,7 +139,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 		<GameContext.Provider
 			value={{
 				direction,
-
+				moveInterval,
+				setMoveInterval,
 				snake,
 				food,
 				handleGesture,
@@ -132,6 +149,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 				isPaused,
 				reloadGame,
 				pauseGame,
+				bigFood,
 			}}
 		>
 			{children}

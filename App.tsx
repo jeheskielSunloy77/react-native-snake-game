@@ -32,7 +32,8 @@ export default function App() {
 }
 
 const AppDrawer = () => {
-	const { score, reloadGame } = useGameContext()
+	const { score, reloadGame, pauseGame, setMoveInterval, moveInterval } =
+		useGameContext()
 	const { toggleTheme, theme } = useThemeContext()
 	const isDark = theme === 'dark'
 	return (
@@ -52,6 +53,13 @@ const AppDrawer = () => {
 						>
 							<Text style={{ fontWeight: 'bold', fontSize: 20 }}>Game Options</Text>
 							<Text style={{ fontWeight: 'bold', fontSize: 11 }}>Game</Text>
+							<ThemedButton
+								title='Resume'
+								onPress={() => {
+									navigation.closeDrawer()
+									pauseGame()
+								}}
+							/>
 							<ThemedButton
 								title='New Game'
 								onPress={() => {
@@ -94,13 +102,31 @@ const AppDrawer = () => {
 								}}
 							>
 								<View style={{ flex: 1 }}>
-									<Button title='Easy' />
+									<Button
+										title='Easy'
+										onPress={() => setMoveInterval(70)}
+										color={
+											moveInterval === 70 ? Colors[theme].secondary : Colors[theme].primary
+										}
+									/>
 								</View>
 								<View style={{ flex: 1 }}>
-									<Button title='Normal' />
+									<Button
+										title='Normal'
+										onPress={() => setMoveInterval(50)}
+										color={
+											moveInterval === 50 ? Colors[theme].secondary : Colors[theme].primary
+										}
+									/>
 								</View>
 								<View style={{ flex: 1 }}>
-									<Button title='Hard' />
+									<Button
+										title='Hard'
+										onPress={() => setMoveInterval(20)}
+										color={
+											moveInterval === 20 ? Colors[theme].secondary : Colors[theme].primary
+										}
+									/>
 								</View>
 							</View>
 						</View>
@@ -120,7 +146,7 @@ const AppDrawer = () => {
 										alignItems: 'center',
 										paddingHorizontal: 15,
 										borderBottomWidth: 1,
-										borderBottomColor: '#e5e7eb',
+										borderBottomColor: isDark ? '#1f2937' : '#e5e7eb',
 										backgroundColor: Colors[theme].background,
 									}}
 								>

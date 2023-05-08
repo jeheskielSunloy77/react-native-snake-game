@@ -3,7 +3,7 @@ import { useDrawerStatus } from '@react-navigation/drawer'
 import React, { useEffect } from 'react'
 import { Modal, Pressable, SafeAreaView, StyleSheet, View } from 'react-native'
 import { PanGestureHandler } from 'react-native-gesture-handler'
-import Food from '../components/Food'
+import { BigFood, RegularFood } from '../components/Food'
 import Snake from '../components/Snake'
 import { Text } from '../components/themedComponents'
 import { useGameContext } from '../contexts/game'
@@ -20,12 +20,15 @@ export default function Game() {
 		reloadGame,
 		isPaused,
 		isGameOver,
+		bigFood,
 	} = useGameContext()
 	const isDrawerOpen = useDrawerStatus() === 'open'
 
 	useEffect(() => {
 		isDrawerOpen && pauseGame()
 	}, [isDrawerOpen])
+
+	const isGamePaused = isPaused && !isGameOver
 
 	return (
 		<>
@@ -38,7 +41,8 @@ export default function Game() {
 				>
 					<View style={styles.boundaries}>
 						<Snake snake={snake} />
-						<Food x={food.x} y={food.y} />
+						<RegularFood x={food.x} y={food.y} />
+						{bigFood && <BigFood x={bigFood.x} y={bigFood.y} />}
 					</View>
 				</SafeAreaView>
 			</PanGestureHandler>
@@ -52,22 +56,22 @@ export default function Game() {
 						backgroundColor: 'rgba(0,0,0,0.5)',
 					}}
 				>
-					{isPaused && !isGameOver ? (
-						<MaterialCommunityIcons name='pause' size={60} color={'white'} />
-					) : (
-						<View style={{ justifyContent: 'center', alignItems: 'center' }}>
-							<Text
-								style={{
-									fontSize: 20,
-									fontWeight: 'bold',
-								}}
-								reverseColor
-							>
-								Game Over
-							</Text>
-							<MaterialCommunityIcons name='reload' size={60} color={'white'} />
-						</View>
-					)}
+					<View style={{ justifyContent: 'center', alignItems: 'center' }}>
+						<Text
+							style={{
+								fontSize: 20,
+								fontWeight: 'bold',
+							}}
+							reverseColor
+						>
+							{isGamePaused ? 'Game Paused' : 'Game Over'}
+						</Text>
+						<MaterialCommunityIcons
+							name={isGamePaused ? 'play' : 'reload'}
+							size={60}
+							color={'white'}
+						/>
+					</View>
 				</Pressable>
 			</Modal>
 		</>
