@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import React, {
 	Dispatch,
 	SetStateAction,
@@ -21,11 +22,22 @@ interface GameContextProps {
 	isPaused: boolean
 	moveInterval: number
 	bigFood: Coordinate | null
+	personalRecord: PersonalRecord[]
 	setMoveInterval: Dispatch<SetStateAction<number>>
 	handleGesture: (event: GestureEventType) => void
 	reloadGame: () => void
 	pauseGame: () => void
+	bigFoodRarity: number | null
+	setBigFoodRarity: Dispatch<SetStateAction<number | null>>
+	wipePersonalRecord: () => void
 }
+type GameDifficulty = 'easy' | 'normal' | 'hard'
+interface PersonalRecord {
+	score: number
+	dificulty: GameDifficulty
+	date: Date
+}
+
 const GameContext = createContext({} as GameContextProps)
 
 const { width, height } = Dimensions.get('window')
@@ -36,22 +48,55 @@ const GAME_BOUNDS = {
 	yMax: Math.floor(height / 11.6),
 }
 
-const SCORE_INCREMENT = 1
-
 const generateCoordinates = () =>
 	randomCoordinate(GAME_BOUNDS.xMax - 5, GAME_BOUNDS.yMax - 5)
 
+const storePersonalRecord = async (personalRecord: PersonalRecord[]) => {
+	try {
+		await AsyncStorage.setItem('@personalRecord', JSON.stringify(personalRecord))
+	} catch (e) {
+		console.log(e)
+	}
+}
+const getPersonalRecord = async () => {
+	try {
+		const jsonValue = await AsyncStorage.getItem('@personalRecord')
+		return jsonValue != null ? JSON.parse(jsonValue) : null
+	} catch (e) {
+		console.log(e)
+	}
+}
+
+const getGameDifficulty = (moveInterval: number): GameDifficulty => {
+	if (moveInterval === 50) return 'normal'
+	if (moveInterval === 70) return 'easy'
+	return 'hard'
+}
+
 export function GameProvider({ children }: { children: React.ReactNode }) {
-	const FOOD_INITIAL_POSITION = generateCoordinates()
-	const SNAKE_INITIAL_POSITION = [generateCoordinates()]
 	const [direction, setDirection] = useState<Direction>(Direction.Right)
 	const [moveInterval, setMoveInterval] = useState(50)
-	const [snake, setSnake] = useState<Coordinate[]>(SNAKE_INITIAL_POSITION)
-	const [food, setFood] = useState<Coordinate>(FOOD_INITIAL_POSITION)
+	const [snake, setSnake] = useState<Coordinate[]>([generateCoordinates()])
+	const [food, setFood] = useState<Coordinate>(generateCoordinates())
 	const [bigFood, setBigFood] = useState<Coordinate | null>(null)
 	const [score, setScore] = useState(0)
 	const [isGameOver, setIsGameOver] = useState(false)
 	const [isPaused, setIsPaused] = useState(false)
+	const [bigFoodRarity, setBigFoodRarity] = useState<number | null>(0.8)
+	const [personalRecord, setPersonalRecord] = useState<PersonalRecord[]>([])
+	const wipePersonalRecord = async () => {
+		try {
+			await AsyncStorage.removeItem('@personalRecord')
+			setPersonalRecord([])
+		} catch (e) {
+			console.log(e)
+		}
+	}
+	useEffect(() => {
+		getPersonalRecord().then((data) => {
+			if (data) setPersonalRecord(data)
+		})
+	}, [])
 
 	useEffect(() => {
 		if (!isGameOver) {
@@ -61,6 +106,15 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 			return () => clearInterval(intervalId)
 		}
 	}, [snake, isGameOver, isPaused])
+
+	useEffect(() => {
+		if (bigFood) {
+			const timeoutId = setTimeout(() => {
+				setBigFood(null)
+			}, 6000)
+			return () => clearTimeout(timeoutId)
+		}
+	}, [bigFood])
 
 	const moveSnake = () => {
 		const snakeHead = snake[0]
@@ -85,12 +139,13 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 		if (checkEatsFood(newHead, food, 2)) {
 			setFood(generateCoordinates())
 			setSnake([newHead, ...snake])
-			setBigFood(generateCoordinates())
-			setScore((prev) => prev + SCORE_INCREMENT)
-		} else if (bigFood && checkEatsFood(newHead, bigFood, 5)) {
+			if (bigFoodRarity && Math.random() > bigFoodRarity)
+				setBigFood(generateCoordinates())
+			setScore((prev) => prev + 1)
+		} else if (bigFood && checkEatsFood(newHead, bigFood, 4)) {
 			setBigFood(null)
 			setSnake([...Array(5).fill(newHead), ...snake])
-			setScore((prev) => prev + SCORE_INCREMENT * 5)
+			setScore((prev) => prev + 5)
 		} else {
 			setSnake([newHead, ...snake.slice(0, -1)])
 		}
@@ -103,6 +158,19 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 			})
 		) {
 			setIsGameOver((prev) => !prev)
+			setPersonalRecord((prev) => {
+				const newPersonalRecord = [
+					...prev,
+					{
+						score,
+						dificulty: getGameDifficulty(moveInterval),
+						date: new Date(),
+					},
+				]
+				storePersonalRecord(newPersonalRecord)
+				return newPersonalRecord
+			})
+
 			return
 		}
 	}
@@ -125,8 +193,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 	}
 
 	const reloadGame = () => {
-		setSnake(SNAKE_INITIAL_POSITION)
-		setFood(FOOD_INITIAL_POSITION)
+		setSnake([generateCoordinates()])
+		setFood(generateCoordinates())
 		setBigFood(null)
 		setIsGameOver(false)
 		setScore(0)
@@ -138,6 +206,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 	return (
 		<GameContext.Provider
 			value={{
+				wipePersonalRecord,
 				direction,
 				moveInterval,
 				setMoveInterval,
@@ -150,6 +219,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 				reloadGame,
 				pauseGame,
 				bigFood,
+				bigFoodRarity,
+				setBigFoodRarity,
+				personalRecord,
 			}}
 		>
 			{children}

@@ -10,6 +10,7 @@ import 'react-native-gesture-handler'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import {
 	MaterialCommunityIcons,
+	Switch,
 	Text,
 	Button as ThemedButton,
 } from './src/components/themedComponents'
@@ -32,8 +33,15 @@ export default function App() {
 }
 
 const AppDrawer = () => {
-	const { score, reloadGame, pauseGame, setMoveInterval, moveInterval } =
-		useGameContext()
+	const {
+		score,
+		reloadGame,
+		pauseGame,
+		setMoveInterval,
+		moveInterval,
+		bigFoodRarity,
+		setBigFoodRarity,
+	} = useGameContext()
 	const { toggleTheme, theme } = useThemeContext()
 	const isDark = theme === 'dark'
 	return (
@@ -67,31 +75,6 @@ const AppDrawer = () => {
 									navigation.closeDrawer()
 								}}
 							/>
-							<Text style={{ fontWeight: 'bold', fontSize: 11 }}>App Theme</Text>
-							<View
-								style={{
-									display: 'flex',
-									gap: 10,
-									flexDirection: 'row',
-									justifyContent: 'space-between',
-									alignItems: 'center',
-								}}
-							>
-								<View style={{ flex: 1 }}>
-									<Button
-										title='Dark Mode'
-										onPress={toggleTheme}
-										color={isDark ? Colors[theme].secondary : Colors[theme].primary}
-									/>
-								</View>
-								<View style={{ flex: 1 }}>
-									<Button
-										title='Light Mode'
-										onPress={toggleTheme}
-										color={isDark ? Colors[theme].primary : Colors[theme].secondary}
-									/>
-								</View>
-							</View>
 							<Text style={{ fontWeight: 'bold', fontSize: 11 }}>Game Difficulty</Text>
 							<View
 								style={{
@@ -129,6 +112,33 @@ const AppDrawer = () => {
 									/>
 								</View>
 							</View>
+							<Text style={{ fontWeight: 'bold', fontSize: 11 }}>Others</Text>
+							<View
+								style={{
+									display: 'flex',
+									flexDirection: 'row',
+									justifyContent: 'space-between',
+									alignItems: 'center',
+								}}
+							>
+								<Text>Enable Big Food Spawn</Text>
+								<Switch
+									value={!!bigFoodRarity}
+									onValueChange={(v) => setBigFoodRarity(v ? 0.8 : null)}
+								/>
+							</View>
+							<View
+								style={{
+									display: 'flex',
+									flexDirection: 'row',
+									justifyContent: 'space-between',
+									alignItems: 'center',
+								}}
+							>
+								<Text>Enable Dark Mode</Text>
+								<Switch value={isDark} onValueChange={toggleTheme} />
+							</View>
+							<PersonalRecordBoard />
 						</View>
 					)}
 				>
@@ -174,6 +184,52 @@ const AppDrawer = () => {
 				barStyle={isDark ? 'light-content' : 'dark-content'}
 				backgroundColor={Colors[theme].background}
 			/>
+		</>
+	)
+}
+
+const PersonalRecordBoard = () => {
+	const { personalRecord, wipePersonalRecord } = useGameContext()
+
+	return (
+		<>
+			<Text style={{ fontWeight: 'bold', fontSize: 11 }}>Personal Record</Text>
+			{personalRecord.length ? (
+				<>
+					<View
+						style={{
+							display: 'flex',
+							flexDirection: 'row',
+							justifyContent: 'space-between',
+							alignItems: 'center',
+						}}
+					>
+						<Text style={{ fontWeight: 'bold' }}>Score</Text>
+						<Text style={{ fontWeight: 'bold' }}>Dificulty</Text>
+						<Text style={{ fontWeight: 'bold' }}>Date Played</Text>
+					</View>
+					{personalRecord.map((record, index) => {
+						return (
+							<View
+								key={index}
+								style={{
+									display: 'flex',
+									flexDirection: 'row',
+									justifyContent: 'space-between',
+									alignItems: 'center',
+								}}
+							>
+								<Text>{record.score}</Text>
+								<Text style={{ textTransform: 'capitalize' }}>{record.dificulty}</Text>
+								<Text>{new Date(record.date).toLocaleDateString()}</Text>
+							</View>
+						)
+					})}
+					<ThemedButton title='Wipe Personal Record' onPress={wipePersonalRecord} />
+				</>
+			) : (
+				<Text style={{ textAlign: 'center' }}>No Records Yet</Text>
+			)}
 		</>
 	)
 }

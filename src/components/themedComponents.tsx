@@ -2,9 +2,11 @@ import { MaterialCommunityIcons as BaseMaterialCommunityIcons } from '@expo/vect
 import React, { ComponentProps } from 'react'
 import {
 	Button as BaseButton,
+	Switch as BaseSwitch,
 	Text as BaseText,
 	View as BaseView,
 	ButtonProps,
+	SwitchProps,
 	TextProps,
 	ViewProps,
 } from 'react-native'
@@ -58,4 +60,15 @@ export const MaterialCommunityIcons = ({
 	const { theme } = useThemeContext()
 
 	return <BaseMaterialCommunityIcons {...props} color={Colors[theme][color]} />
+}
+
+export const Switch = (props: SwitchProps) => {
+	const { theme } = useThemeContext()
+
+	return (
+		<BaseSwitch
+			{...props}
+			thumbColor={props.value ? Colors[theme].primary : Colors[theme].background}
+		/>
+	)
 }
